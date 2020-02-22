@@ -1,10 +1,8 @@
 import { combineReducers } from "redux";
-import { todos } from "./todos";
 import { session } from "./session";
+import { questions } from "./questions";
+import { users } from "./users";
 
-export const root = combineReducers({ todos, session });
+export const rootReducer = combineReducers({ session, questions, users });
 
-export type RootState = {
-  todos: ReturnType<typeof todos>;
-  session: ReturnType<typeof session>;
-};
+export type RootState = ReturnType<typeof rootReducer>;

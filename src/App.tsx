@@ -1,195 +1,87 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, Route, Switch, useHistory } from "react-router-dom";
-import "./App.css";
-import { _getUsers, _getQuestions } from "./dataBase/_DATA";
-import { login, logout, User } from "./redux/sessionActions";
+import { Route, Switch, useHistory } from "react-router-dom";
+import { Home } from "./components/Home";
+import { Leaderboard } from "./components/Leaderboard";
+import { Login } from "./components/Login";
+import { Navigation } from "./components/Navigation";
+import { QuestionNew } from "./components/Question/QuestionNew";
+import { QuestionShow } from "./components/Question/QuestionShow";
 import { RootState } from "./redux/reducers/root";
-
-type UsersDB = Record<string, User>;
-
-type Questions = Record<
-  string,
-  {
-    id: string;
-    author: string;
-    timestamp: number;
-    optionOne: {
-      votes: Array<string>;
-      text: string;
-    };
-    optionTwo: {
-      votes: Array<string>;
-      text: string;
-    };
-  }
->;
-
-type HasQuestions = { questions: Questions };
-
-const Home: FC<HasQuestions & { title: string }> = ({ questions, title }) => {
-  return (
-    <div>
-      <h1>Home</h1>
-      <nav>
-        <Link to="/home/unanswered">unanswered</Link>
-        <Link to="/home/answered">answered</Link>
-      </nav>
-
-      <p>{title}</p>
-
-      <pre>
-        <code>{JSON.stringify(questions, null, 2)}</code>
-      </pre>
-    </div>
-  );
-};
-
-const PollCreate: FC = () => {
-  return <h1>NewQuestion</h1>;
-};
-
-const Leaderboard: FC = () => {
-  return <h1>Leaderboard</h1>;
-};
-
-const getUnansweredQuestions = (
-  user: RootState["session"]["user"],
-  questions?: Questions
-): Questions => {
-  if (!user) {
-    return {};
-  }
-  if (!questions) {
-    return {};
-  }
-
-  const copy = { ...questions };
-
-  Object.keys(user.answers).forEach(questionId => {
-    delete copy[questionId];
-  });
-
-  return copy;
-};
-
-const getAnsweredQuestions = (
-  user: RootState["session"]["user"],
-  questions?: Questions
-): Questions => {
-  if (!user) {
-    return {};
-  }
-  if (!questions) {
-    return {};
-  }
-
-  const copy = Object.keys(user.answers).reduce((acc, questionId) => {
-    acc[questionId] = { ...questions[questionId] };
-
-    return acc;
-  }, {});
-
-  return copy;
-};
+import {
+  getAnsweredQuestions,
+  getUnansweredQuestions
+} from "./redux/selectors/questionSelectors";
+import { requestQuestions } from "./redux/thunks/questionThunks";
+import { requestUsers } from "./redux/thunks/userThunks";
+import { routes } from "./routes";
 
 export const App: FC = () => {
   const state = useSelector((state: RootState) => state);
+  const { questions, users, session } = state;
   const dispatch = useDispatch();
   const history = useHistory();
-  const [users, setUsers] = useState<UsersDB>({});
-  const [questions, setQuestions] = useState<Questions>({});
-
-  const [selectedUser, setSelectedUser] = useState<string>("");
 
   useEffect(() => {
-    _getUsers().then(rsp => setUsers(rsp as UsersDB));
+    dispatch(requestQuestions());
   }, []);
 
   useEffect(() => {
-    _getQuestions().then(rsp => setQuestions(rsp as Questions));
-  }, []);
-
-  const unansweredQuestions = getUnansweredQuestions(
-    state.session.user,
-    questions
-  );
-
-  const answeredQuestions = getAnsweredQuestions(state.session.user, questions);
-
-  console.log({ state, unansweredQuestions, questions });
+    dispatch(requestUsers());
+  }, [questions]);
 
   useEffect(() => {
-    if (state.session.user) {
-      history.push("/home/unanswered");
+    if (session.userId) {
+      history.push(routes.home.unanswered);
     } else {
       history.push("/session/login");
     }
-  }, [state.session.user]);
+  }, [session.userId]);
 
   return (
     <div>
-      {state.session.user && (
-        <nav>
-          <ul
-            style={{ display: "flex", flexDirection: "row", listStyle: "none" }}
-          >
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/poll/create">New Question</Link>
-            </li>
-            <li>
-              <Link to="/leaderboard">Leaderboard</Link>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  dispatch(logout());
-                }}
-              >
-                Logout
-              </button>
-            </li>
-          </ul>
-        </nav>
-      )}
-
+      {session.userId && <Navigation user={users[session.userId]} />}
       <Switch>
-        <Route path="/session/login">
-          <div>
-            <h1>You must login</h1>
-            <select onChange={e => setSelectedUser(e.currentTarget.value)}>
-              <option value="">--Please choose an option--</option>
-              {Object.entries(users).map(([id, user]) => (
-                <option key={id} value={id}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
-            <button
-              disabled={selectedUser === ""}
-              onClick={() => {
-                dispatch(login(users[selectedUser]));
-              }}
-            >
-              login
-            </button>
-          </div>
+        <Route path={routes.session.login}>
+          <Login users={users} />
         </Route>
-        <Route path="/poll/create">
-          <PollCreate></PollCreate>
+        <Route path={routes.question.new}>
+          {session.userId && <QuestionNew user={users[session.userId]} />}
         </Route>
-        <Route path="/leaderboard">
-          <Leaderboard />
+        <Route
+          path={routes.question.show}
+          render={props => {
+            if (!session.userId) {
+              return null;
+            }
+
+            const question = questions[props.match.params.questionId];
+            const author = users[question.author];
+
+            return (
+              <QuestionShow
+                question={question}
+                user={users[session.userId]}
+                author={author}
+              />
+            );
+          }}
+        ></Route>
+        <Route path={routes.leaderboard}>
+          <Leaderboard users={users} />
         </Route>
-        <Route path="/home/unanswered">
-          <Home title="unanswered" questions={unansweredQuestions} />
-        </Route>
-        <Route path="/home/answered">
-          <Home title="answered" questions={answeredQuestions} />
-        </Route>
+        <Route
+          path={routes.home.unanswered}
+          render={() => (
+            <Home questions={getUnansweredQuestions(state)} users={users} />
+          )}
+        />
+        <Route
+          path={routes.home.answered}
+          render={() => (
+            <Home questions={getAnsweredQuestions(state)} users={users} />
+          )}
+        />
       </Switch>
     </div>
   );

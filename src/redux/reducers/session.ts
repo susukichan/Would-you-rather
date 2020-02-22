@@ -1,11 +1,9 @@
-import { SessionAction, User } from "../sessionActions";
+import { SessionAction, HasUser } from "../actions/sessionActions";
 
-type SessionState = {
-  user: User | undefined;
-};
+type SessionState = { userId: HasUser["user"]["id"] | undefined };
 
-const initialState = {
-  user: undefined
+const initialState: SessionState = {
+  userId: undefined
 };
 
 export const session = (
@@ -14,10 +12,10 @@ export const session = (
 ): SessionState => {
   switch (action.type) {
     case "SESSION_LOGIN": {
-      return { user: action.payload };
+      return { userId: action.payload.id };
     }
     case "SESSION_LOGOUT": {
-      return { user: undefined };
+      return { userId: undefined };
     }
     default: {
       return state;
