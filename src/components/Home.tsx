@@ -1,16 +1,37 @@
 import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { HasQuestions } from "../redux/actions/questionActions";
 import { HasUsers } from "../redux/actions/userActions";
 import { mkQuestionShowRoute, routes } from "../routes";
 
 export const Home: FC<HasQuestions & HasUsers> = ({ questions, users }) => {
   return (
-    <div>
-      <h1>Home</h1>
-      <nav>
-        <Link to={routes.home.unanswered}>unanswered</Link>
-        <Link to={routes.home.answered}>answered</Link>
+    <div style={{ width: "50%", margin: "auto" }}>
+      <nav
+        className="ui tabular menu"
+        style={{
+          marginTop: "4rem",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center"
+        }}
+      >
+        <NavLink
+          activeClassName="active"
+          className="item"
+          style={{ backgroundColor: "whitesmoke" }}
+          to={routes.home.unanswered}
+        >
+          unanswered
+        </NavLink>
+        <NavLink
+          activeClassName="active"
+          className="item"
+          style={{ backgroundColor: "whitesmoke" }}
+          to={routes.home.answered}
+        >
+          answered
+        </NavLink>
       </nav>
       <div>
         {Object.values(questions).map(q => {
@@ -22,17 +43,33 @@ export const Home: FC<HasQuestions & HasUsers> = ({ questions, users }) => {
                 display: "grid",
                 gridTemplateColumns: "2fr 10fr",
                 alignItems: "center",
-                border: "2px solid red"
+                border: "2px solid whitesmoke",
+                boxShadow: "0px 0px 106px 14px rgba(235,235,235,1)",
+                marginBottom: "1rem",
+                padding: "1rem"
               }}
             >
               <img
-                style={{ height: "4rem", width: "4rem" }}
+                style={{ height: "7rem", width: "7rem", marginRight: "1rem" }}
                 src={author.avatarURL}
               />
-              <div>
-                <div>{q.author} says ...</div>
-                <div>Would you rather... {q.optionOne.text} ...</div>
-                <Link to={mkQuestionShowRoute(q.id)}>View Poll</Link>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                  {q.author} says ...
+                </div>
+                <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+                  Would you rather...
+                </div>
+                <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+                  {q.optionOne.text} ...
+                </div>
+                <Link
+                  className="ui teal button"
+                  style={{ margin: "0 auto", width: "144px" }}
+                  to={mkQuestionShowRoute(q.id)}
+                >
+                  View Poll
+                </Link>
               </div>
             </div>
           );
