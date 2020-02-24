@@ -1,6 +1,6 @@
-import React, { FC, useEffect } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Route, Switch, useHistory } from "react-router-dom";
+import { Route, Switch, useHistory, Redirect } from "react-router-dom";
 import { Home } from "./components/Home";
 import { Leaderboard } from "./components/Leaderboard";
 import { Login } from "./components/Login";
@@ -15,6 +15,7 @@ import {
 import { requestQuestions } from "./redux/thunks/questionThunks";
 import { requestUsers } from "./redux/thunks/userThunks";
 import { routes } from "./routes";
+import { logout } from "./redux/actions/sessionActions";
 
 export const App: FC = () => {
   const state = useSelector((state: RootState) => state);
@@ -22,25 +23,47 @@ export const App: FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
 
+  const [pathname, setPathname] = useState(routes.home.unanswered);
+
   useEffect(() => {
     dispatch(requestQuestions());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     dispatch(requestUsers());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questions]);
 
   useEffect(() => {
     if (session.userId) {
-      history.push(routes.home.unanswered);
+      history.push(pathname);
     } else {
-      history.push("/session/login");
+      setPathname(
+        [
+          window.location.pathname === "/",
+          window.location.pathname === routes.home.unanswered,
+          window.location.pathname === routes.session.login
+        ].some(x => x)
+          ? routes.home.unanswered
+          : window.location.pathname
+      );
+      history.push(routes.session.login);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.userId]);
 
   return (
     <div>
-      {session.userId && <Navigation user={users[session.userId]} />}
+      {session.userId && (
+        <Navigation
+          onLogout={() => {
+            history.push(routes.home.unanswered);
+            dispatch(logout());
+          }}
+          user={users[session.userId]}
+        />
+      )}
       <Switch>
         <Route path={routes.session.login}>
           <Login users={users} />
@@ -56,6 +79,9 @@ export const App: FC = () => {
             }
 
             const question = questions[props.match.params.questionId];
+            if (!question) {
+              return <Redirect to={routes.status[404]}></Redirect>;
+            }
             const author = users[question.author];
 
             return (
@@ -82,6 +108,19 @@ export const App: FC = () => {
             <Home questions={getAnsweredQuestions(state)} users={users} />
           )}
         />
+
+        <Route>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100vh"
+            }}
+          >
+            <h1 style={{ color: "#00b5ad" }}>404 not found</h1>
+          </div>
+        </Route>
       </Switch>
     </div>
   );

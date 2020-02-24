@@ -1,11 +1,11 @@
 import React, { FC } from "react";
-import { useDispatch } from "react-redux";
-import { Link, NavLink } from "react-router-dom";
-import { HasUser, logout } from "../redux/actions/sessionActions";
+import { NavLink } from "react-router-dom";
+import { HasUser } from "../redux/actions/sessionActions";
 import { routes } from "../routes";
 
-export const Navigation: FC<HasUser> = ({ user }) => {
-  const dispatch = useDispatch();
+export const Navigation: FC<HasUser & {
+  onLogout: () => void;
+}> = ({ user, onLogout }) => {
   return (
     <nav>
       <ul
@@ -50,10 +50,11 @@ export const Navigation: FC<HasUser> = ({ user }) => {
             className="ui image"
             style={{ height: "2rem", width: "2rem" }}
             src={user.avatarURL}
+            alt="user-avatar"
           />
         </li>
         <li className="menu">
-          <button className="item" onClick={() => dispatch(logout())}>
+          <button className="item" onClick={onLogout}>
             Logout
           </button>
         </li>

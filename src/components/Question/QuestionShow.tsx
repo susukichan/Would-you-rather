@@ -55,6 +55,7 @@ export const QuestionShow: FC<Props> = ({ user, question, author }) => {
             <img
               style={{ width: "8rem", height: "8rem", margin: "auto" }}
               src={author.avatarURL}
+              alt="user-avatar"
             />
             <div>
               <h1 style={{ color: "#00b5ad" }}>Would you rather...</h1>
@@ -132,7 +133,7 @@ const ShowResult: FC<Pick<Props, "author" | "question">> = ({
       <div
         style={{
           height: "25rem",
-          width: "25rem",
+          width: "30rem",
           boxShadow: "0px 0px 106px 14px rgba(235,235,235,1)",
           padding: "2rem",
           display: "flex",
@@ -141,7 +142,9 @@ const ShowResult: FC<Pick<Props, "author" | "question">> = ({
         }}
         className="ui card"
       >
-        <h1 style={{ color: "#00b5ad" }}>Asked by {author.name}...</h1>
+        <h1 style={{ color: "#00b5ad", margin: 0 }}>
+          Asked by {author.name}...
+        </h1>
         <div
           style={{
             display: "grid",
@@ -152,9 +155,10 @@ const ShowResult: FC<Pick<Props, "author" | "question">> = ({
           <img
             style={{ width: "5rem", height: "5rem" }}
             src={author.avatarURL}
+            alt="user-avatar"
           />
           <div>
-            <h2>Results:</h2>
+            <h2 style={{ margin: 0 }}>Results:</h2>
             <div>
               <Option
                 text={optionOne.text}
@@ -162,7 +166,7 @@ const ShowResult: FC<Pick<Props, "author" | "question">> = ({
                 total={totalVotes}
               />
             </div>
-            <div>
+            <div style={{ paddingTop: "1rem" }}>
               <Option
                 text={optionTwo.text}
                 count={twoVoteCount}
@@ -185,8 +189,8 @@ const Option: FC<{
 
   return (
     <div>
-      <h3>{text}</h3>
-      <p>
+      <h3 style={{ margin: "0" }}>{text}</h3>
+      <p style={{ margin: "0", paddingTop: "1rem" }}>
         {count} out of {total}
       </p>
       <div style={{ height: "1rem", display: "flex" }}>
@@ -196,15 +200,16 @@ const Option: FC<{
             backgroundColor: "teal",
             flex: percentage
           }}
-        ></div>
+        />
         <div
           style={{
             height: "1rem",
-            backgroundColor: "whitesmoke",
+            backgroundColor: "#ddd",
             flex: 1 - percentage
           }}
-        ></div>
+        />
       </div>
+      <p>{(percentage * 100).toFixed(1)}%</p>
     </div>
   );
 };

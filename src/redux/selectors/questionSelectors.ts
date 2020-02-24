@@ -5,9 +5,9 @@ export const getUnansweredQuestions = ({
   session,
   users,
   questions
-}: RootState): HasQuestions["questions"] => {
+}: RootState): Array<HasQuestions["questions"][0]> => {
   if (!session.userId) {
-    return {};
+    return [];
   }
   const user = users[session.userId];
   const copy = { ...questions };
@@ -15,23 +15,25 @@ export const getUnansweredQuestions = ({
     delete copy[questionId];
   });
 
-  return copy;
+  const xs = Object.values(copy).sort((a, b) => b.timestamp - a.timestamp);
+  return xs;
 };
 
 export const getAnsweredQuestions = ({
   session,
   users,
   questions
-}: RootState): HasQuestions["questions"] => {
+}: RootState): Array<HasQuestions["questions"][0]> => {
   if (!session.userId) {
-    return {};
+    return [];
   }
   const user = users[session.userId];
   const copy = Object.keys(user.answers).reduce((acc, questionId) => {
     acc[questionId] = { ...questions[questionId] };
 
     return acc;
-  }, {});
+  }, {} as HasQuestions["questions"]);
 
-  return copy;
+  const xs = Object.values(copy).sort((a, b) => b.timestamp - a.timestamp);
+  return xs;
 };

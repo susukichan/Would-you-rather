@@ -43,7 +43,7 @@ export const Leaderboard: FC<Props> = ({ users }) => {
                 <img
                   style={{ width: "4rem", height: "4rem" }}
                   src={user.avatarURL}
-                  alt="user-image"
+                  alt="user-avatar"
                 />
                 <div>
                   <div>

@@ -6,11 +6,14 @@ export const routes = {
     unanswered: "/home/unanswered"
   },
   session: {
-    login: "/session/login"
+    login: "/login"
   },
   leaderboard: "/leaderboard",
   question: {
-    new: "/questions/new",
+    new: "/add",
     show: mkQuestionShowRoute(":questionId")
+  },
+  status: {
+    404: "/404"
   }
 };

@@ -4,7 +4,9 @@ import { HasQuestions } from "../redux/actions/questionActions";
 import { HasUsers } from "../redux/actions/userActions";
 import { mkQuestionShowRoute, routes } from "../routes";
 
-export const Home: FC<HasQuestions & HasUsers> = ({ questions, users }) => {
+export const Home: FC<{
+  questions: Array<HasQuestions["questions"][0]>;
+} & HasUsers> = ({ questions, users }) => {
   return (
     <div style={{ width: "50%", margin: "auto" }}>
       <nav
@@ -34,7 +36,7 @@ export const Home: FC<HasQuestions & HasUsers> = ({ questions, users }) => {
         </NavLink>
       </nav>
       <div>
-        {Object.values(questions).map(q => {
+        {questions.map(q => {
           const author = users[q.author];
           return (
             <div
@@ -52,6 +54,7 @@ export const Home: FC<HasQuestions & HasUsers> = ({ questions, users }) => {
               <img
                 style={{ height: "7rem", width: "7rem", marginRight: "1rem" }}
                 src={author.avatarURL}
+                alt="user-avatar"
               />
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <div style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
